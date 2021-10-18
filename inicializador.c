@@ -2,16 +2,97 @@
 #include <sys/shm.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
+
+
+//Variables para la memoria
+key_t Clave_Memoria;
+int Id_Memoria;
+int *Memoria = NULL;
+int i,j;
+
+//Variables para los procesos
+key_t Clave_Procesos;
+int Id_Procesos;
+
+
+void getKeys(){
+
+	//Obtiene la key para la memoria compartida de la memoria :v
+	Clave_Memoria = ftok ("/bin/ls", Memoria_id);
+	if (Clave_Memoria == -1)
+	{
+		printf("No consigo clave para memoria compartida");
+		exit(0);
+	}
+
+	//Obtiene la key para la memoria compartida de los procesos
+	Clave_Procesos = ftok ("/bin/ls", Procesos_id);
+	if (Clave_Procesos == -1)
+	{
+		printf("No consigo clave para memoria compartida");
+		exit(0);
+	}
+
+}
+
+
+
+void setMemory(int tamano){
+
+	//Crea el espacio para la memoria
+	Id_Memoria = shmget (Clave_Memoria, sizeof(int)*tamano, 0777 | IPC_CREAT);
+	if (Id_Memoria == -1)
+	{
+		printf("No consigo Id para memoria compartida");
+		exit(0);
+	}
+
+	//Crea el espacio para los procesos
+	Id_Procesos = shmget (Clave_Procesos, sizeof(int)*tamano, 0777 | IPC_CREAT);
+	if (Id_Procesos == -1)
+	{
+		printf("No consigo Id para memoria compartida");
+		exit(0);
+	}
+
+}
+
+
+
+
+void getMemory(){
+	
+	Memoria = (int *)shmat (Id_Memoria, (char *)0, 0);
+	if (Memoria == NULL)
+	{
+		printf("No consigo memoria compartida");
+		exit(0);
+	}
+
+}
+
+
+
+void prepareMemory(){
+	for (i=0; i<10; i++)
+	{
+
+		Memoria[i] = i;
+		printf("Escrito %d\n", i);
+
+		sleep (1);
+	}
+}
 
 
 
 
 int main()
 {
-	key_t Clave;
-	int Id_Memoria;
-	int *Memoria = NULL;
-	int i,j;
+
+
+
 
 	//
 	//	Conseguimos una clave para la memoria compartida. Todos los
@@ -21,12 +102,8 @@ int main()
 	//	accesible (todos los procesos deben pasar el mismo fichero) y un
 	//	entero cualquiera (todos los procesos el mismo entero).
 	//
-	Clave = ftok ("/bin/ls", Memoria_id);
-	if (Clave == -1)
-	{
-		printf("No consigo clave para memoria compartida");
-		return 1;
-	}
+	getKeys();
+
 
 	//
 	//	Creamos la memoria con la clave recién conseguida. Para ello llamamos
@@ -38,12 +115,8 @@ int main()
 	//	La función nos devuelve un identificador para la memoria recién
 	//	creada.
 	//	 
-	Id_Memoria = shmget (Clave, sizeof(int)*100, 0777 | IPC_CREAT);
-	if (Id_Memoria == -1)
-	{
-		printf("No consigo Id para memoria compartida");
-		return 1;
-	}
+	setMemory(100);
+
 
 	//
 	//	Una vez creada la memoria, hacemos que uno de nuestros punteros
@@ -51,12 +124,8 @@ int main()
 	//	shmat, pasándole el identificador obtenido anteriormente y un
 	//	par de parámetros extraños, que con ceros vale.
 	//
-	Memoria = (int *)shmat (Id_Memoria, (char *)0, 0);
-	if (Memoria == NULL)
-	{
-		printf("No consigo memoria compartida");
-		return 1;
-	}
+	getMemory();
+
 
 	//
 	//	Ya podemos utilizar la memoria.
@@ -64,14 +133,8 @@ int main()
 	//	un segundo entre ellos. Estos datos serán los que lea el otro
 	//	proceso.
 	//
-	for (i=0; i<10; i++)
-	{
+	prepareMemory();
 
-		Memoria[i] = i;
-		printf("Escrito %d\n", i);
-
-		sleep (1);
-	}
 
 	//
 	//	Terminada de usar la memoria compartida, la liberamos.

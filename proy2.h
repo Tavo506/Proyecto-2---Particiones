@@ -4,7 +4,7 @@ const int Procesos_id = 69;
 typedef struct linea
 {
 	
-	char estado = 0;	//0 -> Libre	1 -> Ocupado
+	char estado;	//0 -> Libre	1 -> Ocupado
 	int linea;
 	int proceso;
 
