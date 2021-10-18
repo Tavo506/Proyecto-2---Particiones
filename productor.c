@@ -16,13 +16,16 @@ key_t Clave_Procesos;
 int Id_Procesos;
 
 
+FILE *fptr;
+
+
 void getKeys(){
 
 	//Obtiene la key para la memoria compartida de la memoria :v
 	Clave_Memoria = ftok ("/bin/ls", Memoria_id);
 	if (Clave_Memoria == -1)
 	{
-		printf("No consigo clave para memoria compartida");
+		printf("No consigo clave para memoria compartida\n");
 		exit(0);
 	}
 
@@ -30,7 +33,7 @@ void getKeys(){
 	Clave_Procesos = ftok ("/bin/ls", Procesos_id);
 	if (Clave_Procesos == -1)
 	{
-		printf("No consigo clave para memoria compartida");
+		printf("No consigo clave para memoria compartida\n");
 		exit(0);	}
 
 }
@@ -43,14 +46,14 @@ void setMemory(int tamano){
 	Id_Memoria = shmget (Clave_Memoria, sizeof(int)*tamano, 0777);
 	if (Id_Memoria == -1)
 	{
-		printf("No consigo Id para memoria compartida");
+		printf("No consigo Id para memoria compartida\n");
 		exit(0);	}
 
 	//Crea el espacio para los procesos
 	Id_Procesos = shmget (Clave_Procesos, sizeof(int)*tamano, 0777);
 	if (Id_Procesos == -1)
 	{
-		printf("No consigo Id para memoria compartida");
+		printf("No consigo Id para memoria compartida\n");
 		exit(0);	}
 
 }
@@ -63,9 +66,36 @@ void getMemory(){
 	Memoria = (int *)shmat (Id_Memoria, (char *)0, 0);
 	if (Memoria == NULL)
 	{
-		printf("No consigo memoria compartida");
+		printf("No consigo memoria compartida\n");
 		exit(0);	}
 
+}
+
+
+int getSize(){
+	int num;
+
+	if ((fptr = fopen("data.temp","r")) == NULL){
+		printf("Error! opening file\n");
+
+		// Program exits if the file pointer returns NULL.
+		exit(1);
+	}
+
+	fscanf(fptr,"%d", &num);
+
+	fclose(fptr);
+
+	return num;
+}
+
+
+
+void leerDatos(int tamano){
+	for (i=0; i<tamano; i++)
+	{
+		printf("Leido %d\n", Memoria[i]);
+	}
 }
 
 
@@ -73,7 +103,7 @@ void getMemory(){
 int main()
 {
 	
-
+	int tamano;
 
 	//
 	//	Conseguimos una clave para la memoria compartida. Todos los
@@ -96,7 +126,8 @@ int main()
 	//	La función nos devuelve un identificador para la memoria recién
 	//	creada.
 	//	 
-	setMemory(100);
+	tamano = getSize();
+	setMemory(tamano);
 
 
 	//
@@ -112,11 +143,8 @@ int main()
 	//	y mostramos en pantalla dicho valor. Debería ir cambiando según
 	//	p1 lo va modificando.
 	//
-	for (i=0; i<10; i++)
-	{
-		printf("Leido %d\n", Memoria[i]);
-		sleep (1);
-	}
+	leerDatos(tamano);
+
 
 
 	//

@@ -15,6 +15,9 @@ key_t Clave_Procesos;
 int Id_Procesos;
 
 
+FILE *fptr;
+
+
 void getKeys(){
 
 	//Obtiene la key para la memoria compartida de la memoria :v
@@ -59,6 +62,25 @@ void setMemory(int tamano){
 
 
 
+int getSize(){
+	int num;
+
+	if ((fptr = fopen("data.temp","r")) == NULL){
+		printf("Error! opening file");
+
+		// Program exits if the file pointer returns NULL.
+		exit(1);
+	}
+
+	fscanf(fptr,"%d", &num);
+
+	fclose(fptr);
+
+	return num;
+}
+
+
+
 int main()
 {
 
@@ -74,11 +96,13 @@ int main()
 	//	el flag IPC_CREAT, estamos suponiendo que dicha memoria ya está
 	//	creada.
 	//
-	setMemory(100);
+	setMemory(getSize());
 
 
 	shmctl (Id_Memoria, IPC_RMID, (struct shmid_ds *)NULL);
 	shmctl (Id_Procesos, IPC_RMID, (struct shmid_ds *)NULL);
+
+	printf("Procesos finalizados y memoria liberada!! :D\n");
 	return 0;
 }
 

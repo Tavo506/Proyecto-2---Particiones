@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include<fcntl.h>
 
 //Variables para la memoria
 key_t Clave_Memoria;
@@ -16,13 +17,16 @@ key_t Clave_Procesos;
 int Id_Procesos;
 
 
+FILE *fptr;
+
+
 void getKeys(){
 
 	//Obtiene la key para la memoria compartida de la memoria :v
 	Clave_Memoria = ftok ("/bin/ls", Memoria_id);
 	if (Clave_Memoria == -1)
 	{
-		printf("No consigo clave para memoria compartida");
+		printf("No consigo clave para memoria compartida\n");
 		exit(0);
 	}
 
@@ -30,7 +34,7 @@ void getKeys(){
 	Clave_Procesos = ftok ("/bin/ls", Procesos_id);
 	if (Clave_Procesos == -1)
 	{
-		printf("No consigo clave para memoria compartida");
+		printf("No consigo clave para memoria compartida\n");
 		exit(0);
 	}
 
@@ -44,7 +48,7 @@ void setMemory(int tamano){
 	Id_Memoria = shmget (Clave_Memoria, sizeof(int)*tamano, 0777 | IPC_CREAT);
 	if (Id_Memoria == -1)
 	{
-		printf("No consigo Id para memoria compartida");
+		printf("No consigo Id para memoria compartida\n");
 		exit(0);
 	}
 
@@ -52,7 +56,7 @@ void setMemory(int tamano){
 	Id_Procesos = shmget (Clave_Procesos, sizeof(int)*tamano, 0777 | IPC_CREAT);
 	if (Id_Procesos == -1)
 	{
-		printf("No consigo Id para memoria compartida");
+		printf("No consigo Id para memoria compartida\n");
 		exit(0);
 	}
 
@@ -66,7 +70,7 @@ void getMemory(){
 	Memoria = (int *)shmat (Id_Memoria, (char *)0, 0);
 	if (Memoria == NULL)
 	{
-		printf("No consigo memoria compartida");
+		printf("No consigo memoria compartida\n");
 		exit(0);
 	}
 
@@ -74,15 +78,28 @@ void getMemory(){
 
 
 
-void prepareMemory(){
-	for (i=0; i<10; i++)
+void prepareMemory(int n){
+	for (i=0; i<n; i++)
 	{
 
 		Memoria[i] = i;
 		printf("Escrito %d\n", i);
-
-		sleep (1);
 	}
+}
+
+
+
+void guardarInput(int num) {
+	fptr = fopen("data.temp","w");
+
+   	if(fptr == NULL)
+   	{
+    	printf("Error!");   
+    	exit(1);             
+	}
+
+	fprintf(fptr,"%d",num);
+	fclose(fptr);
 }
 
 
@@ -105,6 +122,9 @@ int main()
 	getKeys();
 
 
+
+
+
 	//
 	//	Creamos la memoria con la clave recién conseguida. Para ello llamamos
 	//	a la función shmget pasándole la clave, el tamaño de memoria que
@@ -115,7 +135,16 @@ int main()
 	//	La función nos devuelve un identificador para la memoria recién
 	//	creada.
 	//	 
-	setMemory(100);
+
+	int tamano;
+    printf("Ingrese el tamaño de la memoria: ");
+    scanf("%d", &tamano);
+
+	setMemory(tamano);
+
+	guardarInput(tamano);
+
+
 
 
 	//
@@ -127,13 +156,19 @@ int main()
 	getMemory();
 
 
+
+
+
 	//
 	//	Ya podemos utilizar la memoria.
 	//	Escribimos cosas en la memoria. Los números de 1 a 10 esperando
 	//	un segundo entre ellos. Estos datos serán los que lea el otro
 	//	proceso.
 	//
-	prepareMemory();
+	prepareMemory(tamano);
+
+
+
 
 
 	//

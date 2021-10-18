@@ -1,6 +1,7 @@
 const int Memoria_id = 33;
 const int Procesos_id = 69;
 
+
 typedef struct linea
 {
 	
