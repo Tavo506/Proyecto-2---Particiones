@@ -1,6 +1,14 @@
+#include <sys/shm.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+
 const int Memoria_id = 33;
 const int Procesos_id = 69;
 
+//Funciones
+key_t getKey(int mem_id);
+void setMemory(int tamano);
 
 typedef struct linea
 {

@@ -19,48 +19,6 @@ int Id_Procesos;
 FILE *fptr;
 
 
-void getKeys(){
-
-	//Obtiene la key para la memoria compartida de la memoria :v
-	Clave_Memoria = ftok ("/bin/ls", Memoria_id);
-	if (Clave_Memoria == -1)
-	{
-		printf("No consigo clave para memoria compartida\n");
-		exit(0);
-	}
-
-	//Obtiene la key para la memoria compartida de los procesos
-	Clave_Procesos = ftok ("/bin/ls", Procesos_id);
-	if (Clave_Procesos == -1)
-	{
-		printf("No consigo clave para memoria compartida\n");
-		exit(0);	}
-
-}
-
-
-
-void setMemory(int tamano){
-
-	//Crea el espacio para la memoria
-	Id_Memoria = shmget (Clave_Memoria, sizeof(int)*tamano, 0777);
-	if (Id_Memoria == -1)
-	{
-		printf("No consigo Id para memoria compartida\n");
-		exit(0);	}
-
-	//Crea el espacio para los procesos
-	Id_Procesos = shmget (Clave_Procesos, sizeof(int)*tamano, 0777);
-	if (Id_Procesos == -1)
-	{
-		printf("No consigo Id para memoria compartida\n");
-		exit(0);	}
-
-}
-
-
-
-
 void getMemory(){
 	
 	Memoria = (int *)shmat (Id_Memoria, (char *)0, 0);
@@ -104,7 +62,6 @@ int main()
 {
 	
 	int tamano;
-
 	//
 	//	Conseguimos una clave para la memoria compartida. Todos los
 	//	procesos que quieran compartir la memoria, deben obtener la misma
@@ -113,9 +70,8 @@ int main()
 	//	accesible (todos los procesos deben pasar el mismo fichero) y un
 	//	entero cualquiera (todos los procesos el mismo entero).
 	//
-	getKeys();
-
-
+	Clave_Memoria = getKey(Memoria_id);//Obtener clave de Memoria
+	Clave_Procesos = getKey(Procesos_id);//Obtener clave de Procesos
 	//
 	//	Creamos la memoria con la clave recién conseguida. Para ello llamamos
 	//	a la función shmget pasándole la clave, el tamaño de memoria que
@@ -128,8 +84,6 @@ int main()
 	//	 
 	tamano = getSize();
 	setMemory(tamano);
-
-
 	//
 	//	Una vez creada la memoria, hacemos que uno de nuestros punteros
 	//	apunte a la zona de memoria recién creada. Para ello llamamos a
@@ -144,7 +98,6 @@ int main()
 	//	p1 lo va modificando.
 	//
 	leerDatos(tamano);
-
 
 
 	//
