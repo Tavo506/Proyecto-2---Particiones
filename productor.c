@@ -4,64 +4,132 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include <pthread.h>
+
 
 //Variables para la memoria
 key_t Clave_Memoria;
 int Id_Memoria;
-int *Memoria = NULL;
+Casilla *Memoria_Casilla = NULL;
+
 int i,j;
 
 //Variables para los procesos
 key_t Clave_Procesos;
 int Id_Procesos;
+Proceso *Memoria_Proceso = NULL;
 
-
+//Otras variables
 FILE *fptr;
+int tipoAlgoritmo; // 0 -> Best Fit | 1 -> First Fir | 2 -> Worst Fit
+int tamano;
+
+pthread_mutex_t mutex;
 
 
-void getMemory(){
+
+/*
+
+================================================
+
+FUNCIONES
+
+================================================
+
+*/
+
+void columnaReady( int id_Proceso ){
+
+	//Debe haber otro semaforo aca y revisar si hay un spy
+
+	pthread_mutex_lock(&mutex);
+
+	//Alocar proceso en memoria
+
+	pthread_mutex_unlock(&mutex);
+
+	sleep( Memoria_Proceso[id_Proceso].tiempo);
+
+	pthread_mutex_lock(&mutex);
+
+	//Desalocar proceso en memoria
+
+	pthread_mutex_unlock(&mutex);
+
+}
+
+void prepararProceso(){
+
+	int indice = buscarProcesoLibre();
+
+	Memoria_Proceso[indice].id = indice;
+
+	int tamanoLinea = (rand() % (10 - 1 + 1)) + 1; //Obtiene un random entre 30-60
+
+	int tiempo = (rand() % (60 - 20 + 1)) + 20; //Obtiene un random entre 30-60
 	
-	Memoria = (int *)shmat (Id_Memoria, (char *)0, 0);
-	if (Memoria == NULL)
-	{
-		printf("No consigo memoria compartida\n");
-		exit(0);	}
+	Memoria_Proceso[indice].tamano = tamanoLinea;
+
+	Memoria_Proceso[indice].tiempo = tiempo;
+
+	//columnaReady(indice);
 
 }
 
+void productorDeProcesos(){
 
-int getSize(){
-	int num;
+	while( 1 ){
 
-	if ((fptr = fopen("data.temp","r")) == NULL){
-		printf("Error! opening file\n");
-
-		// Program exits if the file pointer returns NULL.
-		exit(1);
+		//Crear hilo
+		pthread_t hilo;
+		//pthread_create(&hilo, NULL, func);
+		int nextProcess = (rand() % (60 - 30 + 1)) + 30; //Obtiene un random entre 30-60
+		sleep(nextProcess);
 	}
-
-	fscanf(fptr,"%d", &num);
-
-	fclose(fptr);
-
-	return num;
 }
 
+/*
 
+================================================
+
+FUNCIONES EXTRA
+
+================================================
+
+*/
+
+int buscarProcesoLibre(){ //Busca un proceso vacio
+
+	for ( int i = 0; i < tamano; i++ ){
+		if ( Memoria_Proceso[i].id != NULL ){
+			return i;
+		}
+	}
+	return -1; //Caso altamente improbable
+}
 
 void leerDatos(int tamano){
 	for (i=0; i<tamano; i++)
 	{
-		printf("Leido %d\n", Memoria[i]);
+		printf("Leido %d\n", Memoria_Casilla[i]);
 	}
 }
 
 
 
+
+/*
+
+================================================
+
+MAIN
+
+================================================
+
+*/
+
 int main()
 {
-	
-	int tamano;
 	//
 	//	Conseguimos una clave para la memoria compartida. Todos los
 	//	procesos que quieran compartir la memoria, deben obtener la misma
@@ -81,16 +149,20 @@ int main()
 	//	flag IPC_CREAT para indicar que cree la memoria.
 	//	La función nos devuelve un identificador para la memoria recién
 	//	creada.
-	//	 
+	//
+
 	tamano = getSize();
-	setMemory(tamano);
+	Id_Memoria = setMemoryCasilla(Clave_Memoria, tamano);
+	Id_Procesos = setMemoryProceso(Clave_Procesos, tamano);
+
 	//
 	//	Una vez creada la memoria, hacemos que uno de nuestros punteros
 	//	apunte a la zona de memoria recién creada. Para ello llamamos a
 	//	shmat, pasándole el identificador obtenido anteriormente y un
 	//	par de parámetros extraños, que con ceros vale.
 	//
-	getMemory();
+	Memoria_Casilla = getMemoryCasilla(Id_Memoria);
+	Memoria_Proceso = getMemoryProceso(Id_Procesos);
 
 	//
 	//	Vamos leyendo el valor de la memoria con esperas de un segundo
@@ -100,12 +172,26 @@ int main()
 	leerDatos(tamano);
 
 
+
+	printf( "Escoja el algoritmo a utilizar: \n\n 0. Best Fit \n 1. First fit \n 2. Worst Fit \n\n Debe ser un num entre 0, 1 o 2: ");
+
+	scanf( "%d",&tipoAlgoritmo);
+
+
+//Iniciar programa
+	productorDeProcesos();
+
+
 	//
 	//	Desasociamos nuestro puntero de la memoria compartida. Suponemos
 	//	que p1 (el proceso que la ha creado), la liberará.
 	//
 	if (Id_Memoria != -1)
 	{
-		shmdt ((char *)Memoria);
+		shmdt ((char *)Memoria_Casilla);
+	}
+	if (Id_Procesos != -1)
+	{
+		shmdt ((char *)Memoria_Proceso);
 	}
 }

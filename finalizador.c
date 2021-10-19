@@ -15,18 +15,6 @@ int Id_Procesos;
 
 FILE *fptr;
 
-int getSize(){
-	int num;
-	if ((fptr = fopen("data.temp","r")) == NULL){
-		printf("Error! opening file");
-
-		// Program exits if the file pointer returns NULL.
-		exit(1);
-	}
-	fscanf(fptr,"%d", &num);
-	fclose(fptr);
-	return num;
-}
 
 int main()
 {

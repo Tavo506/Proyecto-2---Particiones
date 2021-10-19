@@ -16,51 +16,10 @@ int i,j;
 key_t Clave_Procesos;
 int Id_Procesos;
 
-FILE *fptr;
 
-key_t getKey(int mem_id){
-	key_t clave;
-	//Obtiene la key para la memoria compartida de la memoria :v
-	clave = ftok ("/bin/ls", mem_id);
-	if (Clave_Memoria == -1)
-	{
-		printf("No consigo clave para memoria compartida\n");
-		exit(0);
-	}
-	return clave;
-}
 
-void setMemory(int tamano){
 
-	//Crea el espacio para la memoria
-	Id_Memoria = shmget (Clave_Memoria, sizeof(Casilla)*tamano, 0777 | IPC_CREAT);
-	if (Id_Memoria == -1)
-	{
-		printf("No consigo Id para memoria compartida\n");
-		exit(0);
-	}
-
-	//Crea el espacio para la lista de procesos
-	Id_Procesos = shmget (Clave_Memoria, sizeof(Proceso)*tamano, 0777 | IPC_CREAT);
-	if (Id_Procesos == -1)
-	{
-		printf("No consigo Id para memoria compartida\n");
-		exit(0);
-	}
-}
-
-Casilla* getMemory(int id_mem){ //Funcion que obtiene la memoria compartida
-	
-	Casilla* memoria = (Casilla *)shmat (id_mem, 0, 0);
-	if (memoria == NULL)
-	{
-		printf("No consigo memoria compartida\n");
-		exit(0);
-	}
-	return memoria;
-}
-
-void prepareMemory(int n){
+void prepareMemory(int n){//Inicializa cada casilla con un 0 en su 'estado'
 	for (i=0; i<n; i++)
 	{
 		Memoria[i].estado = 0;
@@ -68,7 +27,8 @@ void prepareMemory(int n){
 	}
 }
 
-void guardarInput(int num) {
+void guardarInput(int num) { //Funcion que guarda el tamanno de memoria elegido por el usuario.
+    FILE *fptr;
 	fptr = fopen("data.temp","w");
 
    	if(fptr == NULL)
@@ -80,6 +40,17 @@ void guardarInput(int num) {
 	fprintf(fptr,"%d",num);
 	fclose(fptr);
 }
+
+
+/*
+
+================================================
+
+FUNCION PRINCIPAL
+
+================================================
+
+*/
 
 
 int main()
@@ -120,7 +91,7 @@ int main()
 	//	shmat, pasándole el identificador obtenido anteriormente y un
 	//	par de parámetros extraños, que con ceros vale.
 	//
-	Memoria = getMemory(Memoria_id);
+	Memoria = getMemoryCasilla(Id_Memoria);
 	//
 	//	Ya podemos utilizar la memoria.
 	//	Escribimos cosas en la memoria. Los números de 1 a 10 esperando
