@@ -4,92 +4,55 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include<fcntl.h>
+#include <fcntl.h>
 
 //Variables para la memoria
 key_t Clave_Memoria;
 int Id_Memoria;
-int *Memoria = NULL;
+Casilla* Memoria;
 int i,j;
 
 //Variables para los procesos
 key_t Clave_Procesos;
+Proceso* Memoria_Proceso;
 int Id_Procesos;
 
 
-FILE *fptr;
-
-
-void getKeys(){
-
-	//Obtiene la key para la memoria compartida de la memoria :v
-	Clave_Memoria = ftok ("/bin/ls", Memoria_id);
-	if (Clave_Memoria == -1)
-	{
-		printf("No consigo clave para memoria compartida\n");
-		exit(0);
-	}
-
-	//Obtiene la key para la memoria compartida de los procesos
-	Clave_Procesos = ftok ("/bin/ls", Procesos_id);
-	if (Clave_Procesos == -1)
-	{
-		printf("No consigo clave para memoria compartida\n");
-		exit(0);
-	}
-
-}
-
-
-
-void setMemory(int tamano){
+int createMemoryCasilla(key_t Clave_Memoria, int tamano){//Crea la memoria compartida
 
 	//Crea el espacio para la memoria
-	Id_Memoria = shmget (Clave_Memoria, sizeof(int)*tamano, 0777 | IPC_CREAT);
+	int Id_Memoria = shmget (Clave_Memoria, sizeof(Casilla)*tamano, 0777 | IPC_CREAT);
 	if (Id_Memoria == -1)
 	{
 		printf("No consigo Id para memoria compartida\n");
 		exit(0);
 	}
+    return Id_Memoria;
 
-	//Crea el espacio para los procesos
-	Id_Procesos = shmget (Clave_Procesos, sizeof(int)*tamano, 0777 | IPC_CREAT);
+}
+
+int createMemoryProceso(key_t Clave_Procesos, int tamano){
+
+    //Crea el espacio para la lista de procesos
+	int Id_Procesos = shmget (Clave_Procesos, sizeof(Proceso)*tamano, 0777 | IPC_CREAT);
 	if (Id_Procesos == -1)
 	{
 		printf("No consigo Id para memoria compartida\n");
 		exit(0);
 	}
-
+    return Id_Procesos;
 }
 
-
-
-
-void getMemory(){
-	
-	Memoria = (int *)shmat (Id_Memoria, (char *)0, 0);
-	if (Memoria == NULL)
-	{
-		printf("No consigo memoria compartida\n");
-		exit(0);
-	}
-
-}
-
-
-
-void prepareMemory(int n){
+void prepareMemory(int n){//Inicializa cada casilla con un 0 en su 'estado'
 	for (i=0; i<n; i++)
 	{
-
-		Memoria[i] = i;
+		Memoria[i].estado = 0;
 		printf("Escrito %d\n", i);
 	}
 }
 
-
-
-void guardarInput(int num) {
+void guardarInput(int num) { //Funcion que guarda el tamanno de memoria elegido por el usuario.
+    FILE *fptr;
 	fptr = fopen("data.temp","w");
 
    	if(fptr == NULL)
@@ -103,15 +66,19 @@ void guardarInput(int num) {
 }
 
 
+/*
+
+================================================
+
+FUNCION PRINCIPAL
+
+================================================
+
+*/
 
 
 int main()
-{
-
-
-
-
-	//
+{	//
 	//	Conseguimos una clave para la memoria compartida. Todos los
 	//	procesos que quieran compartir la memoria, deben obtener la misma
 	//	clave. Esta se puede conseguir por medio de la función ftok.
@@ -119,11 +86,9 @@ int main()
 	//	accesible (todos los procesos deben pasar el mismo fichero) y un
 	//	entero cualquiera (todos los procesos el mismo entero).
 	//
-	getKeys();
 
-
-
-
+	Clave_Memoria = getKey(Memoria_id);//Obtener clave de Memoria
+	Clave_Procesos = getKey(Procesos_id);//Obtener clave de Procesos
 
 	//
 	//	Creamos la memoria con la clave recién conseguida. Para ello llamamos
@@ -140,12 +105,10 @@ int main()
     printf("Ingrese el tamaño de la memoria: ");
     scanf("%d", &tamano);
 
-	setMemory(tamano);
+	Id_Memoria = createMemoryCasilla(Clave_Memoria, tamano);
+	Id_Procesos = createMemoryProceso(Clave_Procesos,tamano);
 
 	guardarInput(tamano);
-
-
-
 
 	//
 	//	Una vez creada la memoria, hacemos que uno de nuestros punteros
@@ -153,12 +116,7 @@ int main()
 	//	shmat, pasándole el identificador obtenido anteriormente y un
 	//	par de parámetros extraños, que con ceros vale.
 	//
-	getMemory();
-
-
-
-
-
+	Memoria = getMemoryCasilla(Id_Memoria);
 	//
 	//	Ya podemos utilizar la memoria.
 	//	Escribimos cosas en la memoria. Los números de 1 a 10 esperando
@@ -166,11 +124,6 @@ int main()
 	//	proceso.
 	//
 	prepareMemory(tamano);
-
-
-
-
-
 	//
 	//	Terminada de usar la memoria compartida, la liberamos.
 	//
