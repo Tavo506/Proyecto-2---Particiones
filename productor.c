@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
 
 #include <pthread.h>
 
@@ -21,11 +23,41 @@ Proceso *Memoria_Proceso = NULL;
 
 //Otras variables
 FILE *fptr;
-int tipoAlgoritmo; // 0 -> Best Fit | 1 -> First Fir | 2 -> Worst Fit
+int tipoAlgoritmo; // 1 -> Best Fit | 2 -> First Fir | 3 -> Worst Fit
 int tamano;
+
+long conProcess = 0;
 
 pthread_mutex_t mutex;
 
+
+
+/*
+
+================================================
+
+FUNCIONES EXTRA
+
+================================================
+
+*/
+
+int buscarProcesoLibre(){ //Busca un proceso vacio
+
+	for ( int i = 0; i < tamano; i++ ){
+		if ( !Memoria_Proceso[i].id ){
+			return i;
+		}
+	}
+	return -1; //Caso altamente improbable
+}
+
+void leerDatos(int tamano){
+	for (i=0; i<tamano; i++)
+	{
+		printf("Leido %d\n", Memoria_Proceso[i].id);
+	}
+}
 
 
 /*
@@ -38,6 +70,8 @@ FUNCIONES
 
 */
 
+
+
 void columnaReady( int id_Proceso ){
 
 	//Debe haber otro semaforo aca y revisar si hay un spy
@@ -45,6 +79,12 @@ void columnaReady( int id_Proceso ){
 	pthread_mutex_lock(&mutex);
 
 	//Alocar proceso en memoria
+
+		//Analizar si cabe
+
+		//Actualizar id y estado
+
+		//Return en caso de fallar.
 
 	pthread_mutex_unlock(&mutex);
 
@@ -55,14 +95,13 @@ void columnaReady( int id_Proceso ){
 	//Desalocar proceso en memoria
 
 	pthread_mutex_unlock(&mutex);
-
 }
 
 void prepararProceso(){
 
 	int indice = buscarProcesoLibre();
 
-	Memoria_Proceso[indice].id = indice;
+	Memoria_Proceso[indice].id = syscall(SYS_gettid);
 
 	int tamanoLinea = (rand() % (10 - 1 + 1)) + 1; //Obtiene un random entre 30-60
 
@@ -88,32 +127,7 @@ void productorDeProcesos(){
 	}
 }
 
-/*
 
-================================================
-
-FUNCIONES EXTRA
-
-================================================
-
-*/
-
-int buscarProcesoLibre(){ //Busca un proceso vacio
-
-	for ( int i = 0; i < tamano; i++ ){
-		if ( Memoria_Proceso[i].id != NULL ){
-			return i;
-		}
-	}
-	return -1; //Caso altamente improbable
-}
-
-void leerDatos(int tamano){
-	for (i=0; i<tamano; i++)
-	{
-		printf("Leido %d\n", Memoria_Casilla[i]);
-	}
-}
 
 
 
@@ -171,9 +185,10 @@ int main()
 	//
 	leerDatos(tamano);
 
+	//leerDatos(tamano);
 
-
-	printf( "Escoja el algoritmo a utilizar: \n\n 0. Best Fit \n 1. First fit \n 2. Worst Fit \n\n Debe ser un num entre 0, 1 o 2: ");
+/*
+	printf( "Escoja el algoritmo a utilizar: \n\n 1. Best Fit \n 2. First fit \n 3. Worst Fit \n\n Debe ser un num entre 0, 1 o 2: ");
 
 	scanf( "%d",&tipoAlgoritmo);
 
@@ -181,7 +196,7 @@ int main()
 //Iniciar programa
 	productorDeProcesos();
 
-
+*/
 	//
 	//	Desasociamos nuestro puntero de la memoria compartida. Suponemos
 	//	que p1 (el proceso que la ha creado), la liberará.

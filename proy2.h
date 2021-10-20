@@ -3,15 +3,13 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-const int Memoria_id = 33;
-const int Procesos_id = 69;
+const int Memoria_id;
+const int Procesos_id;
 
 //Funciones en el inicializador
 key_t getKey(int mem_id);
 int setMemoryCasilla(key_t Clave_Memoria, int tamano);
 int setMemoryProceso(key_t Clave_Procesos, int tamano);
-Casilla* getMemoryCasilla(int id_mem);
-Proceso* getMemoryProceso(int id_mem);
 int getSize();
 
 typedef struct linea
@@ -27,7 +25,7 @@ typedef struct linea
 typedef struct process 
 {
 
-	int id;
+	pid_t id;
 	int base;
 	int tamano;
 	int tiempo;
@@ -37,3 +35,7 @@ typedef struct process
 					//2 -> Bloqueado (en el wait)
 
 } Proceso;
+
+
+Casilla* getMemoryCasilla(int id_mem);
+Proceso* getMemoryProceso(int id_mem);

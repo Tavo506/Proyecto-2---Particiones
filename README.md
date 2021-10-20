@@ -1,4 +1,9 @@
 # Proyecto-2-Particiones
  
- Compilar todo:
- gcc inicializador.c -o p1 && gcc productor.c -o p2 && gcc finalizador.c -o p4
+## Comando para compilar todo
+
+ '''
+
+gcc inicializador.c funciones.c -o p1 && gcc productor.c funciones.c -o p2 && gcc finalizador.c funciones.c -o p3
+
+ '''

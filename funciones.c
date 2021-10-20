@@ -6,7 +6,8 @@
 
 #include<fcntl.h>
 
-
+const int Memoria_id = 33;
+const int Procesos_id = 69;
 
 /*
 
@@ -34,7 +35,7 @@ key_t getKey(int mem_id){ //Funcion que obtiene la key para la memoria compartid
 int setMemoryCasilla(key_t Clave_Memoria, int tamano){//Crea la memoria compartida
 
 	//Crea el espacio para la memoria
-	int Id_Memoria = shmget (Clave_Memoria, sizeof(Casilla)*tamano, 0777 | IPC_CREAT);
+	int Id_Memoria = shmget (Clave_Memoria, sizeof(Casilla)*tamano, 0777);
 	if (Id_Memoria == -1)
 	{
 		printf("No consigo Id para memoria compartida\n");
@@ -47,7 +48,7 @@ int setMemoryCasilla(key_t Clave_Memoria, int tamano){//Crea la memoria comparti
 int setMemoryProceso(key_t Clave_Procesos, int tamano){
 
     //Crea el espacio para la lista de procesos
-	int Id_Procesos = shmget (Clave_Procesos, sizeof(Proceso)*tamano, 0777 | IPC_CREAT);
+	int Id_Procesos = shmget (Clave_Procesos, sizeof(Proceso)*tamano, 0777);
 	if (Id_Procesos == -1)
 	{
 		printf("No consigo Id para memoria compartida\n");

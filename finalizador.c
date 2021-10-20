@@ -30,7 +30,8 @@ int main()
 	//	creada.
 	//
 	int tamano = getSize();
-	setMemory(tamano);
+	Id_Memoria = setMemoryCasilla(Clave_Memoria, tamano);
+	Id_Procesos = setMemoryProceso(Clave_Procesos, tamano);
 
 	shmctl (Id_Memoria, IPC_RMID, (struct shmid_ds *)NULL);//Liberar Memoria
 	shmctl (Id_Procesos, IPC_RMID, (struct shmid_ds *)NULL);//Liberar Procesos

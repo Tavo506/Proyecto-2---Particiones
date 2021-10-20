@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include<fcntl.h>
+#include <fcntl.h>
 
 //Variables para la memoria
 key_t Clave_Memoria;
@@ -14,10 +14,34 @@ int i,j;
 
 //Variables para los procesos
 key_t Clave_Procesos;
+Proceso* Memoria_Proceso;
 int Id_Procesos;
 
 
+int createMemoryCasilla(key_t Clave_Memoria, int tamano){//Crea la memoria compartida
 
+	//Crea el espacio para la memoria
+	int Id_Memoria = shmget (Clave_Memoria, sizeof(Casilla)*tamano, 0777 | IPC_CREAT);
+	if (Id_Memoria == -1)
+	{
+		printf("No consigo Id para memoria compartida\n");
+		exit(0);
+	}
+    return Id_Memoria;
+
+}
+
+int createMemoryProceso(key_t Clave_Procesos, int tamano){
+
+    //Crea el espacio para la lista de procesos
+	int Id_Procesos = shmget (Clave_Procesos, sizeof(Proceso)*tamano, 0777 | IPC_CREAT);
+	if (Id_Procesos == -1)
+	{
+		printf("No consigo Id para memoria compartida\n");
+		exit(0);
+	}
+    return Id_Procesos;
+}
 
 void prepareMemory(int n){//Inicializa cada casilla con un 0 en su 'estado'
 	for (i=0; i<n; i++)
@@ -81,7 +105,8 @@ int main()
     printf("Ingrese el tamaño de la memoria: ");
     scanf("%d", &tamano);
 
-	setMemory(tamano);
+	Id_Memoria = createMemoryCasilla(Clave_Memoria, tamano);
+	Id_Procesos = createMemoryProceso(Clave_Procesos,tamano);
 
 	guardarInput(tamano);
 
