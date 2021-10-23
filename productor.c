@@ -110,6 +110,7 @@ void getEspacios(int pTamano){
 
 
 				base = i+1 - contador;
+				printf("(%d, %d)\n",base, contador);
 				agregarEspacio(&cabeza, base, contador);
 			}
 
@@ -120,6 +121,7 @@ void getEspacios(int pTamano){
 
 
 				base = i - contador;
+				printf("(%d, %d)\n",base, contador);
 				agregarEspacio(&cabeza, base, contador);
 			}
 
@@ -169,7 +171,6 @@ void borrarLista(tpuntero *cabeza){
 
 int bestFit(int pTamano){
 	
-
 	getEspacios(pTamano);
 	tpuntero aux = cabeza;
 	int base;
@@ -178,6 +179,7 @@ int bestFit(int pTamano){
 	if (cabeza != NULL)
 	{
 		min = cabeza->tamano;
+		base = aux->base;
 
 		while(aux != NULL){
 
@@ -196,8 +198,28 @@ int bestFit(int pTamano){
 
 
 int worstFit(int pTamano){
-	//tpuntero *espacios = getEspacios(pTamano);
-	return -1;
+	getEspacios(pTamano);
+	tpuntero aux = cabeza;
+	int base;
+	int max;
+
+	if (cabeza != NULL)
+	{
+		max = cabeza->tamano;
+		base = aux->base;
+
+		while(aux != NULL){
+
+			if(aux->tamano > max)
+			{
+				max = aux->tamano;
+				base = aux->base;
+			}
+			aux = aux->next;
+		}
+		borrarLista (&cabeza);
+	}
+	return base;
 }
 
 
@@ -275,7 +297,7 @@ void columnaReady( int id_Proceso ){
 		}else{	//En caso de que no quepa el hilo se mata pero antes se hace unlock
 
 			//Se escribe en la bitacora que no cupo
-			printf("El proceso %d no cupo en memoria\n", Memoria_Proceso[id_Proceso].id);
+			printf("El proceso %d no cupo en memoria\nNecesitaba %d espacio\n\n", Memoria_Proceso[id_Proceso].id, Memoria_Proceso[id_Proceso].tamano);
 			eliminarProceso(id_Proceso);
 			pthread_mutex_unlock(&mutex);
 			return;
