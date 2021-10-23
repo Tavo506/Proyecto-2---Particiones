@@ -81,7 +81,7 @@ FUNCIONES
 
 //Retorna la lista de las memorias disponibles segun la memoria solicitada
 void getEspacios(int pTamano){
-
+	
 }
 
 
@@ -224,8 +224,8 @@ void columnaReady( int id_Proceso ){
 
 		Memoria_Proceso[id_Proceso].estado = 0;
 		desalocarMemoria(base, id_Proceso);	//Desalocar proceso en memoria
-		eliminarProceso(id_Proceso);
 		printf("Memoria liberada de %d\n", Memoria_Proceso[id_Proceso].id);
+		eliminarProceso(id_Proceso);
 
 	pthread_mutex_unlock(&mutex);
 }
