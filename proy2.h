@@ -38,6 +38,20 @@ typedef struct process
 } Proceso;
 
 
+typedef struct espacios
+{
+
+	int base;
+	int tamano;
+
+	struct espacios *next;
+
+} Espacio;
+
+typedef Espacio *tpuntero; //Puntero al tipo de dato tnodo para no utilizar punteros de punteros
+
 Casilla* getMemoryCasilla(int id_mem);
 Proceso* getMemoryProceso(int id_mem);
 void printProceso(Proceso *p);
+void getEspacios(int pTamano);
+void agregarEspacio(tpuntero *cabeza, int base, int tamano);

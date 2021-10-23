@@ -30,7 +30,7 @@ long conProcess = 0;
 
 pthread_mutex_t mutex;
 
-
+tpuntero cabeza; //Indica la cabeza de la lista enlazada, si la perdemos no podremos acceder a la lista
 
 /*
 
@@ -78,10 +78,54 @@ FUNCIONES
 
 */
 
+void agregarEspacio(tpuntero *cabeza, int base, int tamano){
+	tpuntero nuevo; //Creamos un nuevo nodo
+    nuevo = malloc(sizeof(Espacio)); //Utilizamos malloc para reservar memoria para ese nodo
+    nuevo->base = base; //Le asignamos el valor ingresado por pantalla a ese nodo
+    nuevo->tamano = tamano; //Le asignamos el valor ingresado por pantalla a ese nodo
+    nuevo->next = *cabeza; //Le asignamos al siguiente el valor de cabeza
+    *cabeza = nuevo; //Cabeza pasa a ser el ultimo nodo agregado
+}
+
 
 //Retorna la lista de las memorias disponibles segun la memoria solicitada
 void getEspacios(int pTamano){
 	
+
+	int base = -1;
+	int contador = 0;
+
+	for (int i = 0; i < tamano; ++i)
+	{
+		if (Memoria_Casilla[i].estado == 0)
+		{
+
+			contador ++;
+
+		}if (i+1 == tamano) {
+
+			if (contador >= pTamano)
+			{
+				Espacio *hueco = malloc(sizeof(Espacio));
+
+
+				base = i+1 - contador;
+				agregarEspacio(&cabeza, base, contador);
+			}
+
+		}if (Memoria_Casilla[i].estado == 1){
+			if (contador >= pTamano)
+			{
+				Espacio *hueco = malloc(sizeof(Espacio));
+
+
+				base = i - contador;
+				agregarEspacio(&cabeza, base, contador);
+			}
+
+			contador = 0;
+		}
+	}
 }
 
 
@@ -112,16 +156,41 @@ int firstFit(int pTamano){
 }
 
 
+void borrarLista(tpuntero *cabeza){ 
+    tpuntero actual; //Puntero auxiliar para eliminar correctamente la lista
+  
+    while(*cabeza != NULL){ //Mientras cabeza no sea NULL
+        actual = *cabeza; //Actual toma el valor de cabeza
+        *cabeza = (*cabeza)->sig; //Cabeza avanza 1 posicion en la lista
+        free(actual); //Se libera la memoria de la posicion de Actual (el primer nodo), y cabeza queda apuntando al que ahora es el primero
+    }
+}
+
 
 int bestFit(int pTamano){
+	
+
 	getEspacios(pTamano);
+
+	if (cabeza != NULL)
+	{
+		//printf("%d, %d\n", cabeza->base, cabeza->tamano);
+
+		
+
+		borrarLista (&cabeza);
+	}
+
+	
+	
+	
 	return -1;
 }
 
 
 
 int worstFit(int pTamano){
-	getEspacios(pTamano);
+	//tpuntero *espacios = getEspacios(pTamano);
 	return -1;
 }
 
@@ -257,7 +326,7 @@ void productorDeProcesos(){
 	//while( 1 ){
 	int nextProcess;
 
-	for (int i = 0; i < 4; ++i){
+	for (int i = 0; i < 1; ++i){
 
 		//Crear hilo
 		pthread_t hilo;
