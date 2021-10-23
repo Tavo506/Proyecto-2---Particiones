@@ -171,20 +171,26 @@ int bestFit(int pTamano){
 	
 
 	getEspacios(pTamano);
+	tpuntero *aux = cabeza;
+	int base;
+	int min;
 
 	if (cabeza != NULL)
 	{
-		//printf("%d, %d\n", cabeza->base, cabeza->tamano);
+		min = cabeza->tamano
 
+		while(aux != NULL){
 
-
+			if(aux->tamano < min)
+			{
+				min = aux->tamano;
+				base = aux->base
+			}
+			aux = aux->next;
+		}
 		borrarLista (&cabeza);
 	}
-
-	
-	
-	
-	return -1;
+	return base;
 }
 
 
