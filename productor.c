@@ -171,20 +171,20 @@ int bestFit(int pTamano){
 	
 
 	getEspacios(pTamano);
-	tpuntero *aux = cabeza;
+	tpuntero aux = cabeza;
 	int base;
 	int min;
 
 	if (cabeza != NULL)
 	{
-		min = cabeza->tamano
+		min = cabeza->tamano;
 
 		while(aux != NULL){
 
 			if(aux->tamano < min)
 			{
 				min = aux->tamano;
-				base = aux->base
+				base = aux->base;
 			}
 			aux = aux->next;
 		}
@@ -332,7 +332,7 @@ void productorDeProcesos(){
 	//while( 1 ){
 	int nextProcess;
 
-	for (int i = 0; i < 1; ++i){
+	for (int i = 0; i < 5; ++i){
 
 		//Crear hilo
 		pthread_t hilo;
