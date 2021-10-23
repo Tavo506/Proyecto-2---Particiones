@@ -6,25 +6,66 @@
 
 #include<fcntl.h>
 
+#ifndef MAX
+#define MAX 100
+#endif
+
 //Variables para la memoria
 key_t Clave_Memoria;
 int Id_Memoria;
+
 
 
 //Variables para los procesos
 key_t Clave_Procesos;
 int Id_Procesos;
 
-FILE *fptr;
+//Otras variables
 
+int tamano;
+FILE *fptr;
 Proceso *Memoria_Proceso = NULL;
 Casilla *Memoria_Casilla = NULL;
 
 //Funciones para el uso del espia 
 
-void visualizarMemoria(){
+const char* convertEstado(int id){
 
+    switch(id){
+        case 0:
+            return "Con acceso a memoria";
+        case 1:
+            return "En ejecucion";
+        case 2:
+            return "Bloqueado";
+        default:
+            return "...";
+    };
 }
+
+void visualizarMemoria(){       //Visualiza los espacios de la memoria simulada
+    
+    for(int i=0; i<tamano; i++){
+        printf("\n\n------Celda %d------\n",i);
+        if(Memoria_Casilla[i].estado == 1){
+            printf("\n%d", Memoria_Casilla[i].proceso);
+        }
+    }
+    printf("\n\n--------------------");
+}
+
+
+void visualizarProcesos(){
+
+    printf("\nPID\tEstado");
+    for(int i=0; i<tamano; i++){
+        if(Memoria_Proceso[i].id != 0){
+            printf("\n%d\t",Memoria_Proceso[i].id);   
+            printf("%s",convertEstado(Memoria_Proceso[i].estado));
+        }
+    }
+}
+
 
 void imprimirOpciones(){
     printf("\n\n1. Visualizar estado de la memoria\n");
@@ -45,7 +86,7 @@ int main(){
 	//	el flag IPC_CREAT, estamos suponiendo que dicha memoria ya está
 	//	creada.
 	//
-	int tamano = getSize();
+	tamano = getSize();
 	Id_Memoria = setMemoryCasilla(Clave_Memoria, tamano);
 	Id_Procesos = setMemoryProceso(Clave_Procesos, tamano);
      //    Una vez creada la memoria, hacemos que uno de nuestros punteros
@@ -66,9 +107,10 @@ int main(){
         switch (opcion)
         {
         case 1:
-            /* code */
+            visualizarMemoria();
             break;
         case 2:
+            visualizarProcesos();
             break;
         case 3:
             running = 0;
