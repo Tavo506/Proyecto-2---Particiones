@@ -350,11 +350,11 @@ void *prepararProceso(){
 }
 
 void productorDeProcesos(){
-
-	//while( 1 ){
+	
 	int nextProcess;
 
-	for (int i = 0; i < 5; ++i){
+	while( 1 ){
+	//for (int i = 0; i < 5; ++i){
 
 		//Crear hilo
 		pthread_t hilo;
