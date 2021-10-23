@@ -59,6 +59,14 @@ void leerDatos(int tamano){
 	}
 }
 
+void leerDatosMemoria(int tamano){
+	for (i=0; i<tamano; i++)
+	{
+		printf("Leido casilla %d\n", i);
+		printf("Ocupado por: %d\n\n", Memoria_Casilla[i].proceso);
+	}
+}
+
 
 /*
 
@@ -136,16 +144,14 @@ int getBase(int pTamano){
 			base = worstFit(pTamano);
 			break;		
 	}
-
 	return base;
-
 }
 
 
 // Agrega el proceso a la memoria
 void alocarMemoria( int base, int id_Proceso ){
 
-    for ( int i = base ; i < Memoria_Proceso[id_Proceso].tamano; i++ ){
+    for ( int i = base ; i < Memoria_Proceso[id_Proceso].tamano + base; i++ ){
         Memoria_Casilla[i].estado = 1;
         Memoria_Casilla[i].proceso = Memoria_Proceso[id_Proceso].id;
     }
@@ -155,7 +161,7 @@ void alocarMemoria( int base, int id_Proceso ){
 // Quitar el proceso a la memoria
 void desalocarMemoria( int base, int id_Proceso ){
 
-    for ( int i = base ; i < Memoria_Proceso[id_Proceso].tamano; i++ ){
+    for ( int i = base ; i < Memoria_Proceso[id_Proceso].tamano + base; i++ ){
         Memoria_Casilla[i].estado = 0;
         Memoria_Casilla[i].proceso = -1;
     }
@@ -170,9 +176,6 @@ void eliminarProceso(int id_Proceso){
 	Memoria_Proceso[id_Proceso].tiempo = -1;
 	Memoria_Proceso[id_Proceso].estado = -1;
 }
-
-
-
 
 void columnaReady( int id_Proceso ){
 
@@ -204,7 +207,6 @@ void columnaReady( int id_Proceso ){
 		}
 
 
-
 	pthread_mutex_unlock(&mutex);
 
 
@@ -219,10 +221,11 @@ void columnaReady( int id_Proceso ){
 
 	pthread_mutex_lock(&mutex);	//REGION CRìTICA
 
+
 		Memoria_Proceso[id_Proceso].estado = 0;
 		desalocarMemoria(base, id_Proceso);	//Desalocar proceso en memoria
 		eliminarProceso(id_Proceso);
-		printf("Memoria liberada\n");
+		printf("Memoria liberada de %d\n", Memoria_Proceso[id_Proceso].id);
 
 	pthread_mutex_unlock(&mutex);
 }
@@ -244,8 +247,6 @@ void *prepararProceso(){
 	Memoria_Proceso[indice].tiempo = tiempo;
 
 	Memoria_Proceso[indice].estado = 2;
-
-	
 
 	columnaReady(indice);
 
