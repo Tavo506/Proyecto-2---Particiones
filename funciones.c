@@ -106,3 +106,23 @@ int getSize(){
 	return num;
 }
 
+
+
+/*
+
+================================================
+
+FUNCIONES PARA LOS PROCESOS
+
+================================================
+
+*/
+
+
+void printProceso(Proceso *p){
+	printf(" id: %d\n tamaño: %d\n tiempo: %d\n base: %d\n estado: %d\n\n", p->id, p->tamano, p->tiempo, p->base, p->estado);
+}
+
+
+
+

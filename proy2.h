@@ -12,6 +12,7 @@ int setMemoryCasilla(key_t Clave_Memoria, int tamano);
 int setMemoryProceso(key_t Clave_Procesos, int tamano);
 int getSize();
 
+
 typedef struct linea
 {
 	
@@ -39,3 +40,4 @@ typedef struct process
 
 Casilla* getMemoryCasilla(int id_mem);
 Proceso* getMemoryProceso(int id_mem);
+void printProceso(Proceso *p);

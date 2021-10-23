@@ -47,7 +47,7 @@ void prepareMemory(int n){//Inicializa cada casilla con un 0 en su 'estado'
 	for (i=0; i<n; i++)
 	{
 		Memoria[i].estado = 0;
-		printf("Escrito %d\n", i);
+		//printf("Escrito %d\n", i);
 	}
 }
 

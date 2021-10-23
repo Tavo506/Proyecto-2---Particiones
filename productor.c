@@ -71,33 +71,165 @@ FUNCIONES
 */
 
 
+//Retorna la lista de las memorias disponibles segun la memoria solicitada
+void getEspacios(int pTamano){
+
+}
+
+
+
+int firstFit(int pTamano){
+	int base = -1;
+	int contador = 0;
+
+	for (int i = 0; i < tamano; ++i)
+	{
+		if (Memoria_Casilla[i].estado == 0 && contador < pTamano)
+		{
+
+			contador ++;
+
+		}else {
+
+			if (contador >= pTamano)
+			{
+				base = i - contador;
+				return base;
+			}
+
+			contador = 0;
+		}
+	}
+	return base;
+}
+
+
+
+int bestFit(int pTamano){
+	getEspacios(pTamano);
+	return -1;
+}
+
+
+
+int worstFit(int pTamano){
+	getEspacios(pTamano);
+	return -1;
+}
+
+
+
+int getBase(int pTamano){
+	int base = -1;
+
+	switch (tipoAlgoritmo){
+		
+		case 1: 	//First Fit
+			base = firstFit(pTamano);
+			break;
+
+		case 2: 	//Best Fit
+			base = bestFit(pTamano);
+			break;
+
+		case 3: 	//Worst Fit
+			base = worstFit(pTamano);
+			break;		
+	}
+
+	return base;
+
+}
+
+
+// Agrega el proceso a la memoria
+void alocarMemoria( int base, int id_Proceso ){
+
+    for ( int i = base ; i < Memoria_Proceso[id_Proceso].tamano; i++ ){
+        Memoria_Casilla[i].estado = 1;
+        Memoria_Casilla[i].proceso = Memoria_Proceso[id_Proceso].id;
+    }
+}
+
+
+// Quitar el proceso a la memoria
+void desalocarMemoria( int base, int id_Proceso ){
+
+    for ( int i = base ; i < Memoria_Proceso[id_Proceso].tamano; i++ ){
+        Memoria_Casilla[i].estado = 0;
+        Memoria_Casilla[i].proceso = -1;
+    }
+}
+
+
+// Settea el proceso a los valores default (lo elimina)
+void eliminarProceso(int id_Proceso){
+	Memoria_Proceso[id_Proceso].id = 0;
+	Memoria_Proceso[id_Proceso].base = -1;
+	Memoria_Proceso[id_Proceso].tamano = -1;
+	Memoria_Proceso[id_Proceso].tiempo = -1;
+	Memoria_Proceso[id_Proceso].estado = -1;
+}
+
+
+
 
 void columnaReady( int id_Proceso ){
 
 	//Debe haber otro semaforo aca y revisar si hay un spy
 
-	pthread_mutex_lock(&mutex);
+	int base;
+
+	pthread_mutex_lock(&mutex);	//REGION CRÌTICA
 
 	//Alocar proceso en memoria
 
+		Memoria_Proceso[id_Proceso].estado = 0;
+
 		//Analizar si cabe
+		base = getBase(Memoria_Proceso[id_Proceso].tamano);
 
-		//Actualizar id y estado
+		if (base >= 0)
+		{
+			Memoria_Proceso[id_Proceso].base = base;	//Actualiza la base
+			alocarMemoria(base, id_Proceso);			//Asigna la memoria al proceso
 
-		//Return en caso de fallar.
+		}else{	//En caso de que no quepa el hilo se mata pero antes se hace unlock
+
+			//Se escribe en la bitacora que no cupo
+			printf("El proceso %d no cupo en memoria\n", Memoria_Proceso[id_Proceso].id);
+			eliminarProceso(id_Proceso);
+			pthread_mutex_unlock(&mutex);
+			return;
+		}
+
+
 
 	pthread_mutex_unlock(&mutex);
 
+
+	Memoria_Proceso[id_Proceso].estado = 1;	//Cuando entra en el sleep es que esta ejecutando
+
+	printProceso(&Memoria_Proceso[id_Proceso]);
+
 	sleep( Memoria_Proceso[id_Proceso].tiempo);
 
-	pthread_mutex_lock(&mutex);
+	Memoria_Proceso[id_Proceso].estado = 2;	//Cuando sale del sleep vuelve a esperar por la region critica
 
-	//Desalocar proceso en memoria
+
+	pthread_mutex_lock(&mutex);	//REGION CRìTICA
+
+		Memoria_Proceso[id_Proceso].estado = 0;
+		desalocarMemoria(base, id_Proceso);	//Desalocar proceso en memoria
+		eliminarProceso(id_Proceso);
+		printf("Memoria liberada\n");
 
 	pthread_mutex_unlock(&mutex);
 }
 
-void prepararProceso(){
+
+
+void *prepararProceso(){
 
 	int indice = buscarProcesoLibre();
 
@@ -111,18 +243,27 @@ void prepararProceso(){
 
 	Memoria_Proceso[indice].tiempo = tiempo;
 
-	//columnaReady(indice);
+	Memoria_Proceso[indice].estado = 2;
+
+	
+
+	columnaReady(indice);
 
 }
 
 void productorDeProcesos(){
 
-	while( 1 ){
+	//while( 1 ){
+	int nextProcess;
+
+	for (int i = 0; i < 4; ++i){
 
 		//Crear hilo
 		pthread_t hilo;
-		//pthread_create(&hilo, NULL, func);
-		int nextProcess = (rand() % (60 - 30 + 1)) + 30; //Obtiene un random entre 30-60
+		pthread_create(&hilo, NULL, prepararProceso, NULL);
+
+		//nextProcess = (rand() % (60 - 30 + 1)) + 30; //Obtiene un random entre 30-60
+		nextProcess = (rand() % (10 - 5 + 1)) + 5; //Obtiene un random entre 5-10 SOLO PARA PRUEBAS!!!!
 		sleep(nextProcess);
 	}
 }
@@ -183,20 +324,21 @@ int main()
 	//	y mostramos en pantalla dicho valor. Debería ir cambiando según
 	//	p1 lo va modificando.
 	//
-	leerDatos(tamano);
-
 	//leerDatos(tamano);
 
-/*
-	printf( "Escoja el algoritmo a utilizar: \n\n 1. Best Fit \n 2. First fit \n 3. Worst Fit \n\n Debe ser un num entre 0, 1 o 2: ");
+
+
+	printf( "Escoja el algoritmo a utilizar: \n\n 1. Best Fit \n 2. First fit \n 3. Worst Fit \n\n Debe ser un num entre 1, 2 o 3: ");
 
 	scanf( "%d",&tipoAlgoritmo);
+
+	printf("\n");
 
 
 //Iniciar programa
 	productorDeProcesos();
 
-*/
+
 	//
 	//	Desasociamos nuestro puntero de la memoria compartida. Suponemos
 	//	que p1 (el proceso que la ha creado), la liberará.
