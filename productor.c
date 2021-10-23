@@ -161,7 +161,7 @@ void borrarLista(tpuntero *cabeza){
   
     while(*cabeza != NULL){ //Mientras cabeza no sea NULL
         actual = *cabeza; //Actual toma el valor de cabeza
-        *cabeza = (*cabeza)->sig; //Cabeza avanza 1 posicion en la lista
+        *cabeza = (*cabeza)->next; //Cabeza avanza 1 posicion en la lista
         free(actual); //Se libera la memoria de la posicion de Actual (el primer nodo), y cabeza queda apuntando al que ahora es el primero
     }
 }
@@ -176,7 +176,7 @@ int bestFit(int pTamano){
 	{
 		//printf("%d, %d\n", cabeza->base, cabeza->tamano);
 
-		
+
 
 		borrarLista (&cabeza);
 	}
