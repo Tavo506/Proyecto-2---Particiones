@@ -20,7 +20,9 @@ int setMemoryCasilla(key_t Clave_Memoria, int tamano);
 int setMemoryProceso(key_t Clave_Procesos, int tamano);
 int setMemorySemaforo(key_t Clave_Semaforo);
 int getSize();
-
+FILE* abrirArchivo(const char* nombre, char *modo);
+void encabezadoBitacora();
+char *getTime();
 
 typedef struct linea
 {

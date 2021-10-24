@@ -151,6 +151,7 @@ int main(){
     int running = 1;
 
     printf("Bienvenid@, soy su programa espia, a continuacion estan las opciones que puedo realizar");
+
     while(running){
         imprimirOpciones();
         scanf("%d", &opcion);

@@ -106,6 +106,8 @@ int main()
 	//	entero cualquiera (todos los procesos el mismo entero).
 	//
 
+	encabezadoBitacora();
+
 	Clave_Memoria = getKey(Memoria_id);//Obtener clave de Memoria
 	Clave_Procesos = getKey(Procesos_id);//Obtener clave de Procesos
 
