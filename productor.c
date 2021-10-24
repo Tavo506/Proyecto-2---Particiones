@@ -355,6 +355,7 @@ void columnaReady( int id_Proceso ){
 
 			//Se escribe en la bitacora que no cupo
 			printf("El proceso %d no cupo en memoria\nNecesitaba %d espacio\n\n", Memoria_Proceso[id_Proceso].id, Memoria_Proceso[id_Proceso].tamano);
+			agregarBitacora(id_Proceso,"\n%d\tCancelado     \tSin espacio suficiente\t%s\t(%d,%d)");
 			eliminarProceso(id_Proceso);
 
 			signalS();
@@ -384,7 +385,6 @@ void columnaReady( int id_Proceso ){
 		desalocarMemoria(base, id_Proceso);	//Desalocar proceso en memoria
 		agregarBitacora(id_Proceso,"\n%d\tDesasignacion\tLiberando memoria\t%s\t(%d,%d)");
 		printf("Memoria liberada de %d\n", Memoria_Proceso[id_Proceso].id);
-		agregarBitacora(id_Proceso,"\n%d\tDesasignacion\tEliminando proceso\t%s\t(%d,%d)");
 		eliminarProceso(id_Proceso);
 
 		signalS();
