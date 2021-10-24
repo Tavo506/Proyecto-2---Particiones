@@ -11,7 +11,9 @@ key_t getKey(int mem_id);
 int setMemoryCasilla(key_t Clave_Memoria, int tamano);
 int setMemoryProceso(key_t Clave_Procesos, int tamano);
 int getSize();
-
+FILE* abrirArchivo(const char* nombre, char *modo);
+void encabezadoBitacora();
+char *getTime();
 
 typedef struct linea
 {

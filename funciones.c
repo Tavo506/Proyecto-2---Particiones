@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-
+#include <time.h>
 #include<fcntl.h>
+#include <assert.h>
 
 const int Memoria_id = 33;
 const int Procesos_id = 69;
@@ -91,6 +92,20 @@ FUNCIONES PARA MANEJO DE ARCHIVOS
 ================================================
 
 */
+FILE* abrirArchivo(const char* nombre, char *modo){
+	FILE *archivo;
+	if ((archivo = fopen(nombre,modo)) == NULL){
+		printf("Error! opening file");
+		exit(1);
+	}
+	return archivo;
+}
+void encabezadoBitacora(){
+	FILE* fichero;     
+	fichero = abrirArchivo("bitacora.txt","w");
+	fprintf (fichero, "%s","PID\t\tTipo\t\t\tAccion\t\t\t\tHora\t\t\t\t\t\tLineas asignadas");
+    fclose(fichero);
+}
 
 int getSize(){
     FILE *fptr;
@@ -106,8 +121,27 @@ int getSize(){
 	return num;
 }
 
+/*
+
+==================================================
+
+Funciones manejo de horas
+
+==================================================
 
 
+*/
+
+char* getTime(){
+
+	time_t t = time(NULL);
+    struct tm *tm = localtime(&t);
+    char s[64];
+    assert(strftime(s, sizeof(s), "%c", tm));
+	char *time = s;
+	return time;
+
+}
 /*
 
 ================================================

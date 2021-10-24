@@ -274,6 +274,18 @@ void eliminarProceso(int id_Proceso){
 	Memoria_Proceso[id_Proceso].estado = -1;
 }
 
+void agregarBitacora(int id_Proceso, char* mensaje){
+	FILE* fichero;     
+			fichero = abrirArchivo("bitacora.txt","a+");
+			fprintf (fichero, mensaje,
+					Memoria_Proceso[id_Proceso].id,
+					getTime(),
+					Memoria_Proceso[id_Proceso].base,
+					Memoria_Proceso[id_Proceso].base + Memoria_Proceso[id_Proceso].tamano);
+    		fclose(fichero);
+
+}
+
 void columnaReady( int id_Proceso ){
 
 	//Debe haber otro semaforo aca y revisar si hay un spy
@@ -293,6 +305,7 @@ void columnaReady( int id_Proceso ){
 		{
 			Memoria_Proceso[id_Proceso].base = base;	//Actualiza la base
 			alocarMemoria(base, id_Proceso);			//Asigna la memoria al proceso
+			agregarBitacora(id_Proceso,"\n%d\tAsignacion    \tAlocado en memoria\t%s\t(%d,%d)");
 
 		}else{	//En caso de que no quepa el hilo se mata pero antes se hace unlock
 
@@ -321,9 +334,10 @@ void columnaReady( int id_Proceso ){
 
 		Memoria_Proceso[id_Proceso].estado = 0;
 		desalocarMemoria(base, id_Proceso);	//Desalocar proceso en memoria
+		agregarBitacora(id_Proceso,"\n%d\tDesasignacion\tLiberando memoria\t%s\t(%d,%d)");
 		printf("Memoria liberada de %d\n", Memoria_Proceso[id_Proceso].id);
+		agregarBitacora(id_Proceso,"\n%d\tDesasignacion\tEliminando proceso\t%s\t(%d,%d)");
 		eliminarProceso(id_Proceso);
-
 	pthread_mutex_unlock(&mutex);
 }
 
