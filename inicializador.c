@@ -6,16 +6,35 @@
 
 #include <fcntl.h>
 
-//Variables para la memoria
+
+
+#if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
+// La union ya está definida en sys/sem.h
+#else
+// Tenemos que definir la union
+union semun 
+{ 
+	int val;
+	struct semid_ds *buf;
+	unsigned short int *array;
+	struct seminfo *__buf;
+};
+#endif
+
+
+//Variables para la memoria#####
 key_t Clave_Memoria;
 int Id_Memoria;
 Casilla* Memoria;
 int i,j;
 
-//Variables para los procesos
+
+//Variables para los procesos#####
 key_t Clave_Procesos;
 Proceso* Memoria_Proceso;
 int Id_Procesos;
+
+
 
 
 int createMemoryCasilla(key_t Clave_Memoria, int tamano){//Crea la memoria compartida
@@ -124,6 +143,13 @@ int main()
 	//	proceso.
 	//
 	prepareMemory(tamano);
+
+
+
+
+	
+
+
 	//
 	//	Terminada de usar la memoria compartida, la liberamos.
 	//

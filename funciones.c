@@ -8,6 +8,7 @@
 
 const int Memoria_id = 33;
 const int Procesos_id = 69;
+const int Semaforo_id = 777;
 
 /*
 
@@ -122,6 +123,38 @@ FUNCIONES PARA LOS PROCESOS
 void printProceso(Proceso *p){
 	printf(" id: %d\n tamaño: %d\n tiempo: %d\n base: %d\n estado: %d\n\n", p->id, p->tamano, p->tiempo, p->base, p->estado);
 }
+
+
+
+/*
+
+================================================
+
+FUNCIONES PARA MANEJO DE SEMAFOROS
+
+================================================
+
+*/
+
+
+
+
+
+int setMemorySemaforo(key_t Clave_Semaforo){//Crea la memoria compartida
+
+	//Crea el espacio para la memoria
+	int Id_Semaforo = semget (Clave_Semaforo, 10, 0600 | IPC_CREAT);	
+	if (Id_Semaforo == -1)
+	{
+		printf("No consigo Id para memoria compartida\n");
+		exit(0);
+	}
+    return Id_Semaforo;
+}
+
+
+
+
 
 
 

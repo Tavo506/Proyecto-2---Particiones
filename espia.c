@@ -6,6 +6,24 @@
 
 #include<fcntl.h>
 
+
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+
+#if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
+// La union ya está definida en sys/sem.h
+#else
+// Tenemos que definir la union
+union semun 
+{ 
+    int val;
+    struct semid_ds *buf;
+    unsigned short int *array;
+    struct seminfo *__buf;
+};
+#endif
+
 #ifndef MAX
 #define MAX 100
 #endif
@@ -26,6 +44,14 @@ int tamano;
 FILE *fptr;
 Proceso *Memoria_Proceso = NULL;
 Casilla *Memoria_Casilla = NULL;
+
+
+//Variables para los semaforos#####
+key_t Clave_Semaforo;
+int Id_Semaforo;
+struct sembuf Operacion;
+union semun arg;
+
 
 //Funciones para el uso del espia 
 
@@ -74,6 +100,18 @@ void imprimirOpciones(){
 }
 
 
+void waitS(){
+    Operacion.sem_op = -1;
+
+    semop (Id_Semaforo, &Operacion, 1);
+}
+
+void signalS(){
+    Operacion.sem_op = 1;
+
+    semop (Id_Semaforo, &Operacion, 1);
+}
+
 
 int main(){
 
@@ -97,6 +135,18 @@ int main(){
     Memoria_Casilla = getMemoryCasilla(Id_Memoria);
     Memoria_Proceso = getMemoryProceso(Id_Procesos);
 
+
+
+
+    Clave_Semaforo = getKey(Semaforo_id);
+    Id_Semaforo = setMemorySemaforo(Clave_Semaforo);
+
+
+    Operacion.sem_num = 0;
+    Operacion.sem_flg = 0;
+
+
+
     int opcion;
     int running = 1;
 
@@ -104,13 +154,18 @@ int main(){
     while(running){
         imprimirOpciones();
         scanf("%d", &opcion);
+        
         switch (opcion)
         {
         case 1:
+            waitS();
             visualizarMemoria();
+            signalS();
             break;
         case 2:
+            waitS();
             visualizarProcesos();
+            signalS();
             break;
         case 3:
             running = 0;
@@ -121,6 +176,7 @@ int main(){
         default:
             break;
         }
+
         
     }
 
@@ -135,5 +191,6 @@ int main(){
     {
         shmdt ((char *)Memoria_Proceso);
     }
+    
     return 0;
 }

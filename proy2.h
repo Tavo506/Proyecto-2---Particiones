@@ -3,13 +3,22 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include <sys/ipc.h>
+#include <sys/sem.h>
+#include <sys/types.h>
+
+
+
+
 const int Memoria_id;
 const int Procesos_id;
+const int Semaforo_id;
 
 //Funciones en el inicializador
 key_t getKey(int mem_id);
 int setMemoryCasilla(key_t Clave_Memoria, int tamano);
 int setMemoryProceso(key_t Clave_Procesos, int tamano);
+int setMemorySemaforo(key_t Clave_Semaforo);
 int getSize();
 
 
@@ -49,6 +58,7 @@ typedef struct espacios
 } Espacio;
 
 typedef Espacio *tpuntero; //Puntero al tipo de dato tnodo para no utilizar punteros de punteros
+
 
 Casilla* getMemoryCasilla(int id_mem);
 Proceso* getMemoryProceso(int id_mem);

@@ -4,6 +4,24 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+
+#if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
+// La union ya está definida en sys/sem.h
+#else
+// Tenemos que definir la union
+union semun 
+{ 
+	int val;
+	struct semid_ds *buf;
+	unsigned short int *array;
+	struct seminfo *__buf;
+};
+#endif
+
 //Variables para la memoria
 key_t Clave_Memoria;
 int Id_Memoria;

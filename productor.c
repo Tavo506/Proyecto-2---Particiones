@@ -9,17 +9,37 @@
 #include <pthread.h>
 
 
+#include <sys/ipc.h>
+#include <sys/sem.h>
+
+#if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
+// La union ya está definida en sys/sem.h
+#else
+// Tenemos que definir la union
+union semun 
+{ 
+	int val;
+	struct semid_ds *buf;
+	unsigned short int *array;
+	struct seminfo *__buf;
+};
+#endif
+
+
 //Variables para la memoria
 key_t Clave_Memoria;
 int Id_Memoria;
 Casilla *Memoria_Casilla = NULL;
 
+
 int i,j;
+
 
 //Variables para los procesos
 key_t Clave_Procesos;
 int Id_Procesos;
 Proceso *Memoria_Proceso = NULL;
+
 
 //Otras variables
 FILE *fptr;
@@ -31,6 +51,14 @@ long conProcess = 0;
 pthread_mutex_t mutex;
 
 tpuntero cabeza; //Indica la cabeza de la lista enlazada, si la perdemos no podremos acceder a la lista
+
+
+//Variables para los semaforos#####
+key_t Clave_Semaforo;
+int Id_Semaforo;
+struct sembuf Operacion;
+union semun arg;
+
 
 /*
 
@@ -52,20 +80,7 @@ int buscarProcesoLibre(){ //Busca un proceso vacio
 	return -1; //Caso altamente improbable
 }
 
-void leerDatos(int tamano){
-	for (i=0; i<tamano; i++)
-	{
-		printf("Leido %d\n", Memoria_Proceso[i].id);
-	}
-}
 
-void leerDatosMemoria(int tamano){
-	for (i=0; i<tamano; i++)
-	{
-		printf("Leido casilla %d\n", i);
-		printf("Ocupado por: %d\n\n", Memoria_Casilla[i].proceso);
-	}
-}
 
 
 /*
@@ -274,6 +289,34 @@ void eliminarProceso(int id_Proceso){
 	Memoria_Proceso[id_Proceso].estado = -1;
 }
 
+
+
+void waitS(){
+	Operacion.sem_op = -1;
+
+	semop (Id_Semaforo, &Operacion, 1);
+}
+
+void signalS(){
+	Operacion.sem_op = 1;
+
+	semop (Id_Semaforo, &Operacion, 1);
+}
+
+
+
+
+
+/*
+
+##################################################################
+
+REGIONES CRITICAS
+
+###################################################################
+
+*/
+
 void columnaReady( int id_Proceso ){
 
 	//Debe haber otro semaforo aca y revisar si hay un spy
@@ -281,6 +324,8 @@ void columnaReady( int id_Proceso ){
 	int base;
 
 	pthread_mutex_lock(&mutex);	//REGION CRÌTICA
+
+	waitS();
 
 	//Alocar proceso en memoria
 
@@ -299,10 +344,13 @@ void columnaReady( int id_Proceso ){
 			//Se escribe en la bitacora que no cupo
 			printf("El proceso %d no cupo en memoria\nNecesitaba %d espacio\n\n", Memoria_Proceso[id_Proceso].id, Memoria_Proceso[id_Proceso].tamano);
 			eliminarProceso(id_Proceso);
+
+			signalS();
 			pthread_mutex_unlock(&mutex);
 			return;
 		}
 
+	signalS();
 
 	pthread_mutex_unlock(&mutex);
 
@@ -318,14 +366,18 @@ void columnaReady( int id_Proceso ){
 
 	pthread_mutex_lock(&mutex);	//REGION CRìTICA
 
+		waitS();
 
 		Memoria_Proceso[id_Proceso].estado = 0;
 		desalocarMemoria(base, id_Proceso);	//Desalocar proceso en memoria
 		printf("Memoria liberada de %d\n", Memoria_Proceso[id_Proceso].id);
 		eliminarProceso(id_Proceso);
 
+		signalS();
+
 	pthread_mutex_unlock(&mutex);
 }
+
 
 
 
@@ -383,47 +435,35 @@ MAIN
 
 int main()
 {
-	//
-	//	Conseguimos una clave para la memoria compartida. Todos los
-	//	procesos que quieran compartir la memoria, deben obtener la misma
-	//	clave. Esta se puede conseguir por medio de la función ftok.
-	//	A esta función se le pasa un fichero cualquiera que exista y esté
-	//	accesible (todos los procesos deben pasar el mismo fichero) y un
-	//	entero cualquiera (todos los procesos el mismo entero).
-	//
+
 	Clave_Memoria = getKey(Memoria_id);//Obtener clave de Memoria
 	Clave_Procesos = getKey(Procesos_id);//Obtener clave de Procesos
-	//
-	//	Creamos la memoria con la clave recién conseguida. Para ello llamamos
-	//	a la función shmget pasándole la clave, el tamaño de memoria que
-	//	queremos reservar (100 enteros en nuestro caso) y unos flags.
-	//	Los flags son  los permisos de lectura/escritura/ejecucion 
-	//	para propietario, grupo y otros (es el 777 en octal) y el 
-	//	flag IPC_CREAT para indicar que cree la memoria.
-	//	La función nos devuelve un identificador para la memoria recién
-	//	creada.
-	//
+	
 
 	tamano = getSize();
 	Id_Memoria = setMemoryCasilla(Clave_Memoria, tamano);
 	Id_Procesos = setMemoryProceso(Clave_Procesos, tamano);
 
-	//
-	//	Una vez creada la memoria, hacemos que uno de nuestros punteros
-	//	apunte a la zona de memoria recién creada. Para ello llamamos a
-	//	shmat, pasándole el identificador obtenido anteriormente y un
-	//	par de parámetros extraños, que con ceros vale.
-	//
+	
 	Memoria_Casilla = getMemoryCasilla(Id_Memoria);
 	Memoria_Proceso = getMemoryProceso(Id_Procesos);
 
-	//
-	//	Vamos leyendo el valor de la memoria con esperas de un segundo
-	//	y mostramos en pantalla dicho valor. Debería ir cambiando según
-	//	p1 lo va modificando.
-	//
-	//leerDatos(tamano);
+	
+	Clave_Semaforo = getKey(Semaforo_id);
+	Id_Semaforo = setMemorySemaforo(Clave_Semaforo);
 
+	//
+	//	Se inicializa el semáforo con un valor conocido. Si lo ponemos a 0,
+	//	es semáforo estará "rojo". Si lo ponemos a 1, estará "verde".
+	//	El 0 de la función semctl es el índice del semáforo que queremos
+	//	inicializar dentro del array de 10 que hemos pedido.
+	//
+	arg.val = 1;
+	semctl (Id_Semaforo, 0, SETVAL, &arg);
+
+	Operacion.sem_num = 0;
+	//Operacion.sem_op = -1;	Esto irá cambiando en los wait y signal, por lo que no vale de nada ponerlo aquí
+	Operacion.sem_flg = 0;
 
 
 	printf( "Escoja el algoritmo a utilizar: \n\n 1. Best Fit \n 2. First fit \n 3. Worst Fit \n\n Debe ser un num entre 1, 2 o 3: ");
