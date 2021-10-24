@@ -34,6 +34,13 @@ int Id_Procesos;
 FILE *fptr;
 
 
+//Variables para los semaforos#####
+key_t Clave_Semaforo;
+int Id_Semaforo;
+struct sembuf Operacion;
+union semun arg;
+
+
 int main()
 {
 	//
@@ -50,6 +57,17 @@ int main()
 	int tamano = getSize();
 	Id_Memoria = setMemoryCasilla(Clave_Memoria, tamano);
 	Id_Procesos = setMemoryProceso(Clave_Procesos, tamano);
+
+
+	Clave_Semaforo = getKey(Semaforo_id);
+    Id_Semaforo = setMemorySemaforo(Clave_Semaforo);
+
+
+    Operacion.sem_num = 1;
+    Operacion.sem_op = 2;
+    Operacion.sem_flg = 0;
+
+    semop (Id_Semaforo, &Operacion, 1);
 
 	shmctl (Id_Memoria, IPC_RMID, (struct shmid_ds *)NULL);//Liberar Memoria
 	shmctl (Id_Procesos, IPC_RMID, (struct shmid_ds *)NULL);//Liberar Procesos

@@ -57,7 +57,11 @@ tpuntero cabeza; //Indica la cabeza de la lista enlazada, si la perdemos no podr
 key_t Clave_Semaforo;
 int Id_Semaforo;
 struct sembuf Operacion;
+struct sembuf OperacionFinalizar;
 union semun arg;
+
+
+int seguir = 1;
 
 
 /*
@@ -423,11 +427,32 @@ void *prepararProceso(){
 
 }
 
+
+void pararProcesos(){
+
+}
+
+
+
+void * checkParar(){
+
+	semop (Id_Semaforo, &OperacionFinalizar, 1);
+
+	seguir = 0;
+	exit(0);
+
+}
+
+
+
 void productorDeProcesos(){
 	
 	int nextProcess;
 
-	while( 1 ){
+	pthread_t hiloParar;
+	pthread_create(&hiloParar, NULL, checkParar, NULL);
+
+	while( seguir ){
 	//for (int i = 0; i < 5; ++i){
 
 		//Crear hilo
@@ -438,6 +463,8 @@ void productorDeProcesos(){
 		nextProcess = (rand() % (10 - 5 + 1)) + 5; //Obtiene un random entre 5-10 SOLO PARA PRUEBAS!!!!
 		sleep(nextProcess);
 	}
+
+	pararProcesos();
 }
 
 
@@ -486,6 +513,11 @@ int main()
 	Operacion.sem_num = 0;
 	//Operacion.sem_op = -1;	Esto irá cambiando en los wait y signal, por lo que no vale de nada ponerlo aquí
 	Operacion.sem_flg = 0;
+
+
+	OperacionFinalizar.sem_num = 1;
+	OperacionFinalizar.sem_op = -2;	
+	OperacionFinalizar.sem_flg = 0;
 
 
 	printf( "Escoja el algoritmo a utilizar: \n\n 1. First Fit \n 2. Best fit \n 3. Worst Fit \n\n Debe ser un num entre 1, 2 o 3: ");
