@@ -362,13 +362,13 @@ void columnaReady( int id_Proceso ){
 		{
 			Memoria_Proceso[id_Proceso].base = base;	//Actualiza la base
 			alocarMemoria(base, id_Proceso);			//Asigna la memoria al proceso
-			agregarBitacora(id_Proceso,"\n%d\t\tAsignacion    \t\tAlocado en memoria\t\t%s\t\t(%d,%d)", 1);
+			agregarBitacora(id_Proceso,"\n%d\t\tAsignacion    \t\tAlocado en memoria\t\t%s\t\t\t(%d,%d)", 1);
 
 		}else{	//En caso de que no quepa el hilo se mata pero antes se hace unlock
 
 			//Se escribe en la bitacora que no cupo
 			printf("El proceso %d no cupo en memoria\nNecesitaba %d espacio\n\n", Memoria_Proceso[id_Proceso].id, Memoria_Proceso[id_Proceso].tamano);
-			agregarBitacora(id_Proceso,"\n%d\t\tCancelado     \t\tSin espacio suficiente\t\t%s\t\t%s", 0);
+			agregarBitacora(id_Proceso,"\n%d\t\tCancelado     \t\tSin espacio suficiente\t\t%s\t\t\t%s", 0);
 			eliminarProceso(id_Proceso);
 
 			signalS();
@@ -396,7 +396,7 @@ void columnaReady( int id_Proceso ){
 
 		Memoria_Proceso[id_Proceso].estado = 0;
 		desalocarMemoria(base, id_Proceso);	//Desalocar proceso en memoria
-		agregarBitacora(id_Proceso,"\n%d\t\tDesasignacion\t\tLiberando memoria\t\t%s\t\t(%d,%d)", 1);
+		agregarBitacora(id_Proceso,"\n%d\t\tDesasignacion\t\tLiberando memoria\t\t%s\t\t\t(%d,%d)", 1);
 		printf("Memoria liberada de %d\n", Memoria_Proceso[id_Proceso].id);
 		eliminarProceso(id_Proceso);
 
@@ -427,10 +427,6 @@ void *prepararProceso(){
 
 }
 
-
-void pararProcesos(){
-
-}
 
 
 
@@ -464,7 +460,6 @@ void productorDeProcesos(){
 		sleep(nextProcess);
 	}
 
-	pararProcesos();
 }
 
 
