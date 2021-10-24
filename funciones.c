@@ -103,7 +103,7 @@ FILE* abrirArchivo(const char* nombre, char *modo){
 }
 void encabezadoBitacora(){
 	FILE* fichero;     
-	fichero = abrirArchivo("bitacora.txt","w");
+	fichero = abrirArchivo("bitacora.log","w");
 	fprintf (fichero, "%s","PID\t\tTipo\t\t\tAccion\t\t\t\tHora\t\t\t\t\t\tLineas asignadas");
     fclose(fichero);
 }

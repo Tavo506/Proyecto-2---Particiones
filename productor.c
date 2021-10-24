@@ -188,7 +188,7 @@ int bestFit(int pTamano){
 	
 	getEspacios(pTamano);
 	tpuntero aux = cabeza;
-	int base;
+	int base = -1;
 	int min;
 
 	if (cabeza != NULL)
@@ -215,7 +215,7 @@ int bestFit(int pTamano){
 int worstFit(int pTamano){
 	getEspacios(pTamano);
 	tpuntero aux = cabeza;
-	int base;
+	int base = -1;
 	int max;
 
 	if (cabeza != NULL)
@@ -303,14 +303,23 @@ void signalS(){
 }
 
 
-void agregarBitacora(int id_Proceso, char* mensaje){
+void agregarBitacora(int id_Proceso, char* mensaje, int success){
 	FILE* fichero;     
-			fichero = abrirArchivo("bitacora.txt","a+");
-			fprintf (fichero, mensaje,
+			fichero = abrirArchivo("bitacora.log","a+");
+			if (success)
+			{
+				fprintf (fichero, mensaje,
 					Memoria_Proceso[id_Proceso].id,
 					getTime(),
 					Memoria_Proceso[id_Proceso].base,
 					Memoria_Proceso[id_Proceso].base + Memoria_Proceso[id_Proceso].tamano);
+			}else{
+				fprintf (fichero, mensaje,
+					Memoria_Proceso[id_Proceso].id,
+					getTime(),
+					"na");
+			}
+			
     		fclose(fichero);
 
 }
@@ -349,13 +358,13 @@ void columnaReady( int id_Proceso ){
 		{
 			Memoria_Proceso[id_Proceso].base = base;	//Actualiza la base
 			alocarMemoria(base, id_Proceso);			//Asigna la memoria al proceso
-			agregarBitacora(id_Proceso,"\n%d\tAsignacion    \tAlocado en memoria\t%s\t(%d,%d)");
+			agregarBitacora(id_Proceso,"\n%d\t\tAsignacion    \t\tAlocado en memoria\t\t%s\t\t(%d,%d)", 1);
 
 		}else{	//En caso de que no quepa el hilo se mata pero antes se hace unlock
 
 			//Se escribe en la bitacora que no cupo
 			printf("El proceso %d no cupo en memoria\nNecesitaba %d espacio\n\n", Memoria_Proceso[id_Proceso].id, Memoria_Proceso[id_Proceso].tamano);
-			agregarBitacora(id_Proceso,"\n%d\tCancelado     \tSin espacio suficiente\t%s\t(%d,%d)");
+			agregarBitacora(id_Proceso,"\n%d\t\tCancelado     \t\tSin espacio suficiente\t\t%s\t\t%s", 0);
 			eliminarProceso(id_Proceso);
 
 			signalS();
@@ -383,7 +392,7 @@ void columnaReady( int id_Proceso ){
 
 		Memoria_Proceso[id_Proceso].estado = 0;
 		desalocarMemoria(base, id_Proceso);	//Desalocar proceso en memoria
-		agregarBitacora(id_Proceso,"\n%d\tDesasignacion\tLiberando memoria\t%s\t(%d,%d)");
+		agregarBitacora(id_Proceso,"\n%d\t\tDesasignacion\t\tLiberando memoria\t\t%s\t\t(%d,%d)", 1);
 		printf("Memoria liberada de %d\n", Memoria_Proceso[id_Proceso].id);
 		eliminarProceso(id_Proceso);
 
@@ -479,7 +488,7 @@ int main()
 	Operacion.sem_flg = 0;
 
 
-	printf( "Escoja el algoritmo a utilizar: \n\n 1. Best Fit \n 2. First fit \n 3. Worst Fit \n\n Debe ser un num entre 1, 2 o 3: ");
+	printf( "Escoja el algoritmo a utilizar: \n\n 1. First Fit \n 2. Best fit \n 3. Worst Fit \n\n Debe ser un num entre 1, 2 o 3: ");
 
 	scanf( "%d",&tipoAlgoritmo);
 

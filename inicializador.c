@@ -150,7 +150,7 @@ int main()
 
 
 	
-
+	printf("Memoria preparada exitosamente!! :D\n");
 
 	//
 	//	Terminada de usar la memoria compartida, la liberamos.
