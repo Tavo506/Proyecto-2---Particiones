@@ -72,6 +72,10 @@ int main()
 	shmctl (Id_Memoria, IPC_RMID, (struct shmid_ds *)NULL);//Liberar Memoria
 	shmctl (Id_Procesos, IPC_RMID, (struct shmid_ds *)NULL);//Liberar Procesos
 
+	FILE* fichero; 
+	fichero = abrirArchivo("bitacora.log","a+");
+	fclose(fichero);
+
 	printf("Procesos finalizados y memoria liberada!! :D\n");
 	return 0;
 }

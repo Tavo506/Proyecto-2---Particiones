@@ -346,14 +346,15 @@ void columnaReady( int id_Proceso ){
 	//Debe haber otro semaforo aca y revisar si hay un spy
 
 	int base;
+	//sleep(3);
 
 	pthread_mutex_lock(&mutex);	//REGION CRÌTICA
-
 	waitS();
 
 	//Alocar proceso en memoria
 
 		Memoria_Proceso[id_Proceso].estado = 0;
+		//sleep(3);
 
 		//Analizar si cabe
 		base = getBase(Memoria_Proceso[id_Proceso].tamano);
@@ -455,8 +456,8 @@ void productorDeProcesos(){
 		pthread_t hilo;
 		pthread_create(&hilo, NULL, prepararProceso, NULL);
 
-		//nextProcess = (rand() % (60 - 30 + 1)) + 30; //Obtiene un random entre 30-60
-		nextProcess = (rand() % (10 - 5 + 1)) + 5; //Obtiene un random entre 5-10 SOLO PARA PRUEBAS!!!!
+		nextProcess = (rand() % (60 - 30 + 1)) + 30; //Obtiene un random entre 30-60
+		//nextProcess = (rand() % (10 - 5 + 1)) + 5; //Obtiene un random entre 5-10 SOLO PARA PRUEBAS!!!!
 		sleep(nextProcess);
 	}
 
@@ -503,11 +504,12 @@ int main()
 	//	inicializar dentro del array de 10 que hemos pedido.
 	//
 	arg.val = 1;
-	semctl (Id_Semaforo, 0, SETVAL, &arg);
+	semctl (Id_Semaforo, 0, SETVAL, 1);
 
 	Operacion.sem_num = 0;
-	//Operacion.sem_op = -1;	Esto irá cambiando en los wait y signal, por lo que no vale de nada ponerlo aquí
+	Operacion.sem_op = 1;	//Esto irá cambiando en los wait y signal, por lo que no vale de nada ponerlo aquí
 	Operacion.sem_flg = 0;
+
 
 
 	OperacionFinalizar.sem_num = 1;
