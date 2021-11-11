@@ -159,14 +159,14 @@ int main(){
         switch (opcion)
         {
         case 1:
-            //waitS();
+            waitS();
             visualizarMemoria();
-            //signalS();
+            signalS();
             break;
         case 2:
-            //waitS();
+            waitS();
             visualizarProcesos();
-            //signalS();
+            signalS();
             break;
         case 3:
             running = 0;

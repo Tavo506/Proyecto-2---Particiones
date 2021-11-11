@@ -458,8 +458,8 @@ void productorDeProcesos(){
 		pthread_t hilo;
 		pthread_create(&hilo, NULL, prepararProceso, NULL);
 
-		nextProcess = (rand() % (60 - 30 + 1)) + 30; //Obtiene un random entre 30-60
-		//nextProcess = (rand() % (10 - 5 + 1)) + 5; //Obtiene un random entre 5-10 SOLO PARA PRUEBAS!!!!
+		//nextProcess = (rand() % (60 - 30 + 1)) + 30; //Obtiene un random entre 30-60
+		nextProcess = (rand() % (10 - 5 + 1)) + 5; //Obtiene un random entre 5-10 SOLO PARA PRUEBAS!!!!
 		sleep(nextProcess);
 	}
 
